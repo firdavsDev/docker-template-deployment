@@ -6,14 +6,14 @@
 - update the OS:
 
 ```
-- sudo apt-get update
+sudo apt-get update
 ```
 
 - Install git *If it does not already exist*
 
 ```
-- git --version
-- sudo apt install git
+ git --version
+ sudo apt install git
 ```
 
 - Install docker:
