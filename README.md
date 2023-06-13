@@ -80,7 +80,7 @@ Copy the printed key and navigate to:
 Back into our virtual server:
 - touch ~/.ssh/config
 - chmod 600 ~/.ssh/config
-- vim ~/.ssh/config
+- nano ~/.ssh/config
 
 ----------------copy below the two line and paste int into vim---------------------
 Host github.com
@@ -88,9 +88,8 @@ Host github.com
 ----------------copy above the two line and paste int into vim---------------------
 
 In order to save and leave the vim:
-- press Esc (escape button) couple of times
-- press "shift and :" key
-- type "wq", it save the current state of vim
+- press Ctrl + X
+- press Y
 
 Check if everything is fine:
 - ssh -T git@github.com
