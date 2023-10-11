@@ -82,10 +82,10 @@ Back into our virtual server:
 - chmod 600 ~/.ssh/config
 - nano ~/.ssh/config
 
-----------------copy below the two line and paste int into vim---------------------
+----------------copy below the two line and paste int into nano---------------------
 Host github.com
     IdentityFile ~/.ssh/github/id_rsa
-----------------copy above the two line and paste int into vim---------------------
+----------------copy above the two line and paste int into nano---------------------
 
 In order to save and leave the vim:
 - press Ctrl + X
