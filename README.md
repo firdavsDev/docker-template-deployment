@@ -24,31 +24,35 @@ sudo apt-get update
 
 ```
 Installing prerequisites:
-- sudo apt-get remove docker docker-engine docker.io containerd runc
-- sudo apt-get update
-- sudo apt-get install ca-certificates curl gnupg lsb-release
-- sudo mkdir -p /etc/apt/keyrings
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-- echo \
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 Updating the system:
-- sudo apt-get update
+sudo apt-get update
 
 Installing docker:
-- sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 Adding docker to sudouser:
-- sudo usermod -aG docker $USER
+sudo usermod -aG docker $USER
 ```
 
 - Installing docker-compose
 
 ```
-- sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-- sudo chmod +x /usr/local/bin/docker-compose
-- docker-compose --version
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+docker-compose --version
 ```
 
 - Note
@@ -65,10 +69,10 @@ Log out and log back in so that docker is added to sudo user
 
 ```
 assuming that we are in our virtual server:
-- sudo apt update && sudo apt install -y openssh-client git
-- mkdir -p -m 700 ~/.ssh/github
-- ssh-keygen -t rsa -b 4096 -C 'your@email.com' -f ~/.ssh/github/id_rsa -q -N ''
-- cat ~/.ssh/github/id_rsa.pub
+sudo apt update && sudo apt install -y openssh-client git
+mkdir -p -m 700 ~/.ssh/github
+ssh-keygen -t rsa -b 4096 -C 'your@email.com' -f ~/.ssh/github/id_rsa -q -N ''
+cat ~/.ssh/github/id_rsa.pub
 
 Copy the printed key and navigate to:
 - From the drop-down menu in upper right corner select Settings
@@ -78,9 +82,9 @@ Copy the printed key and navigate to:
 - Then click on the Add SSH Key button
 
 Back into our virtual server:
-- touch ~/.ssh/config
-- chmod 600 ~/.ssh/config
-- nano ~/.ssh/config
+touch ~/.ssh/config
+chmod 600 ~/.ssh/config
+nano ~/.ssh/config
 
 ----------------copy below the two line and paste int into nano---------------------
 Host github.com
