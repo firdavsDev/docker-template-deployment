@@ -1,129 +1,171 @@
-# This is a documentation of how to deploy a project on AWS/Ubuntu server
+# 🚀 Project Deployment Guide (AWS / Ubuntu Server)
 
-## Setup
+## 1. Update & Prepare Server
 
-
-- update the OS:
-
-```
-sudo apt-get update
+```bash
+sudo apt update && sudo apt upgrade -y
 ```
 
-- Install git *If it does not already exist*
+Install Git (if not already installed):
 
-```
- git --version
- sudo apt install git
+```bash
+git --version || sudo apt install -y git
 ```
 
-- Install docker:
-  - set up and install prerequisites
-  - update the system
-  - install docker
-  - add docker to sudouser
+---
 
+## 2. Install Docker
+
+Remove old versions (if any):
+
+```bash
+sudo apt-get remove docker docker-engine docker.io containerd runc -y
 ```
-Installing prerequisites:
-sudo apt-get remove docker docker-engine docker.io containerd runc
-sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg lsb-release
+
+Install prerequisites:
+
+```bash
+sudo apt-get install -y ca-certificates curl gnupg lsb-release
 sudo mkdir -p /etc/apt/keyrings
+```
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+Add Docker GPG key:
 
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```bash
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+```
 
-Updating the system:
+Add Docker repository:
+
+```bash
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+Update & install Docker:
+
+```bash
 sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+```
 
-Installing docker:
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+Add user to Docker group:
 
-Adding docker to sudouser:
+```bash
 sudo usermod -aG docker $USER
 ```
 
-- Installing docker-compose
+👉 **Important:** Log out & log back in (or `newgrp docker`) to apply changes.
 
-```
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+---
+
+## 3. Install Docker Compose
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/2.20.2/docker-compose-$(uname -s)-$(uname -m)" \
+-o /usr/local/bin/docker-compose
 
 sudo chmod +x /usr/local/bin/docker-compose
-
 docker-compose --version
 ```
 
-- Note
+*(updated to a newer stable release — change version if needed)*
+
+---
+
+## 4. Configure SSH Access to GitHub
+
+Install OpenSSH client (if missing):
+
+```bash
+sudo apt install -y openssh-client
 ```
-Log out and log back in so that docker is added to sudo user
+
+Generate SSH key:
+
+```bash
+mkdir -p ~/.ssh/github
+ssh-keygen -t rsa -b 4096 -C "your@email.com" -f ~/.ssh/github/id_rsa -N ""
 ```
 
-- Now, it is time to clone the project
-  - in order to clone the project, we need to generate a key and add it to our github SSH/GPG key section as new key
-  - in order to add the key follow the instruction below
+Copy public key:
 
-
-- Set up SSH key based authentication
-
-```
-assuming that we are in our virtual server:
-sudo apt update && sudo apt install -y openssh-client git
-mkdir -p -m 700 ~/.ssh/github
-ssh-keygen -t rsa -b 4096 -C 'your@email.com' -f ~/.ssh/github/id_rsa -q -N ''
+```bash
 cat ~/.ssh/github/id_rsa.pub
+```
 
-Copy the printed key and navigate to:
-- From the drop-down menu in upper right corner select Settings
-- Then from the menu at the left side select SSH and GPG keys
-- Click on the New SSH Key button
-- Type some meaningful for a Title and paste the content of ~/.ssh/github/id_rsa.pub in the field Key
-- Then click on the Add SSH Key button
+Add this key to **GitHub → Settings → SSH and GPG keys → New SSH Key**.
 
-Back into our virtual server:
-touch ~/.ssh/config
-chmod 600 ~/.ssh/config
+Configure SSH:
+
+```bash
 nano ~/.ssh/config
+```
 
-----------------copy below the two line and paste int into nano---------------------
+Add:
+
+```
 Host github.com
     IdentityFile ~/.ssh/github/id_rsa
-----------------copy above the two line and paste int into nano---------------------
-
-In order to save and leave the vim:
-- press Ctrl + X
-- press Y
-
-Check if everything is fine:
-- ssh -T git@github.com
-  it should prine a message like this:
-  Hi <your_username> You've successfully authenticated, but GitHub does not provide shell access
 ```
 
-- Note!
-  - Up to this point, configuration should have been done successfully
-  - Now it is time to deploy our project
+Save → `Ctrl+X`, press `Y`.
 
+Test connection:
 
-- Deploying the project
-```
-- cd <your project's root folder> where docker-compose files lie
-- docker-compose -f production.yml up --build -d 
+```bash
+ssh -T git@github.com
 ```
 
+Expected:
+`Hi <your_username>! You've successfully authenticated, but GitHub does not provide shell access.`
 
-- Getting a dump from database
-```
-docker exec -t <database-container> pg_dump -c -U <database-user> -d <database-name> > dump_`date +%d-%m-%Y"_"%H_%M_%S`.sql 
+---
+
+## 5. Clone & Deploy Project
+
+Clone your repository:
+
+```bash
+git clone git@github.com:<your-username>/<your-repo>.git
+cd <your-repo>
 ```
 
-- Copying a file from AWS EC2 to local machone
-```
-scp -i <your-pem-key.pem> root@IP:path/to/your/dump/dump.sql /local/machine/directory
+Deploy with Docker Compose:
+
+```bash
+docker-compose -f production.yml up --build -d
 ```
 
-- Restoring a DB
+Check running containers:
+
+```bash
+docker ps
 ```
-cat <dump.sql> | docker exec -i <database-container> psql -U <database-user> -d <database-name>
+
+---
+
+## 6. Database Management
+
+### Backup (dump):
+
+```bash
+docker exec -t <db-container> pg_dump -U <db-user> -d <db-name> \
+> dump_$(date +%d-%m-%Y_%H-%M-%S).sql
 ```
+
+### Copy dump from server → local:
+
+```bash
+scp -i <your-key.pem> ubuntu@<SERVER_IP>:/path/to/dump.sql /local/path/
+```
+
+### Restore database:
+
+```bash
+cat dump.sql | docker exec -i <db-container> psql -U <db-user> -d <db-name>
+```
+
+Do you want me to also **add firewall setup (UFW + SSH only, open HTTP/HTTPS)** and **NGINX reverse proxy setup** for production best practices? That’s usually the next step after this.
