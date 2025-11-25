@@ -165,3 +165,193 @@ scp -i <your-key.pem> ubuntu@<SERVER_IP>:/path/to/dump.sql /local/path/
 cat dump.sql | docker exec -i <db-container> psql -U <db-user> -d <db-name>
 ```
 
+# 🔥 7. Firewall (UFW) Setup
+
+Enable basic firewall, only SSH + HTTP + HTTPS ochiq.
+
+Install UFW (ko‘p holatda oldindan bor):
+
+```bash
+sudo apt install ufw -y
+```
+
+Allow SSH (albatta birinchi!):
+
+```bash
+sudo ufw allow OpenSSH
+```
+
+Allow HTTP/HTTPS:
+
+```bash
+sudo ufw allow 80
+sudo ufw allow 443
+```
+
+Enable firewall:
+
+```bash
+sudo ufw enable
+```
+
+Status:
+
+```bash
+sudo ufw status verbose
+```
+
+Agar custom portlarda backend yoki admin panel bo‘lsa — qo‘shib qo‘yasiz.
+
+---
+
+# 🕸 8. NGINX Reverse Proxy (SSL-ready)
+
+Install NGINX:
+
+```bash
+sudo apt install nginx -y
+```
+
+Start:
+
+```bash
+sudo systemctl enable nginx
+sudo systemctl start nginx
+```
+
+---
+
+## 8.1 Reverse Proxy Config (Docker Compose service nomiga yo‘naltirilgan)
+
+Misol uchun backend `app` nomli container’da va `8000` portda ishlayotgan bo‘lsa.
+
+Create config:
+
+```bash
+sudo nano /etc/nginx/sites-available/project.conf
+```
+
+Config:
+
+```
+server {
+    listen 80;
+    server_name YOUR_DOMAIN.COM;
+
+    client_max_body_size 50M;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Enable:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/project.conf /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+---
+
+## 8.2 HTTPS (Let's Encrypt SSL)
+
+Install Certbot:
+
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+```
+
+Issue certificate:
+
+```bash
+sudo certbot --nginx -d YOUR_DOMAIN.COM
+```
+
+Auto-renew test:
+
+```bash
+sudo certbot renew --dry-run
+```
+
+SSL shu bilan tayyor.
+
+---
+
+# 🔐 9. Fail2Ban Setup (SSH brute-force himoya)
+
+Install:
+
+```bash
+sudo apt install fail2ban -y
+```
+
+Default config qimirlatilmaydi. Bizga local override yetadi.
+
+Create local jail config:
+
+```bash
+sudo nano /etc/fail2ban/jail.local
+```
+
+Paste:
+
+```
+[DEFAULT]
+bantime = 1h
+findtime = 10m
+maxretry = 5
+ignoreip = 127.0.0.1/8
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 5
+```
+
+Enable & restart:
+
+```bash
+sudo systemctl enable fail2ban
+sudo systemctl restart fail2ban
+```
+
+Check status:
+
+```bash
+sudo fail2ban-client status
+sudo fail2ban-client status sshd
+```
+
+---
+
+# 🎯 10. Optional: NGINX rate limiting (DDoS / floodga qarshi)
+
+Configga qo‘shish (site config ichida, server{} yuqorisida):
+
+```
+limit_req_zone $binary_remote_addr zone=mylimit:10m rate=10r/s;
+```
+
+Server ichiga qo‘shish:
+
+```
+location / {
+    limit_req zone=mylimit burst=20 nodelay;
+    proxy_pass http://127.0.0.1:8000;
+    ...
+}
+```
+
+---
+
+[Telegram](https://t.me/davronbek_dev)
