@@ -44,7 +44,7 @@ https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
 sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-Update & install Docker:
+Update & install Docker + Compose plugin:
 
 ```bash
 sudo apt-get update
@@ -61,23 +61,21 @@ sudo usermod -aG docker $USER
 
 ---
 
-## 3. Install Docker Compose
+## 3. Docker Compose (V2)
+
+Alohida o‘rnatish shart emas — Compose hozir Docker ichida **plugin** sifatida mavjud.
+
+Tekshirish:
 
 ```bash
-sudo curl -L "https://github.com/docker/compose/releases/download/2.20.2/docker-compose-$(uname -s)-$(uname -m)" \
--o /usr/local/bin/docker-compose
-
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+docker compose version
 ```
-
-*(updated to a newer stable release — change version if needed)*
 
 ---
 
 ## 4. Configure SSH Access to GitHub
 
-Install OpenSSH client (if missing):
+Install OpenSSH client:
 
 ```bash
 sudo apt install -y openssh-client
@@ -87,7 +85,7 @@ Generate SSH key:
 
 ```bash
 mkdir -p ~/.ssh/github
-ssh-keygen -t rsa -b 4096 -C "your@email.com" -f ~/.ssh/github/id_rsa -N ""
+ssh-keygen -t rsa -b 4096 -C "you@email.com" -f ~/.ssh/github/id_rsa -N ""
 ```
 
 Copy public key:
@@ -96,7 +94,8 @@ Copy public key:
 cat ~/.ssh/github/id_rsa.pub
 ```
 
-Add this key to **GitHub → Settings → SSH and GPG keys → New SSH Key**.
+Add this key to
+**GitHub → Settings → SSH and GPG keys → New SSH Key**
 
 Configure SSH:
 
@@ -111,32 +110,30 @@ Host github.com
     IdentityFile ~/.ssh/github/id_rsa
 ```
 
-Save → `Ctrl+X`, press `Y`.
-
 Test connection:
 
 ```bash
 ssh -T git@github.com
 ```
 
-Expected:
-`Hi <your_username>! You've successfully authenticated, but GitHub does not provide shell access.`
+GitHub shu xabarni chiqarishi kerak:
+`You've successfully authenticated, but GitHub does not provide shell access.`
 
 ---
 
 ## 5. Clone & Deploy Project
 
-Clone your repository:
+Clone repository:
 
 ```bash
 git clone git@github.com:<your-username>/<your-repo>.git
 cd <your-repo>
 ```
 
-Deploy with Docker Compose:
+Deploy:
 
 ```bash
-docker-compose -f production.yml up --build -d
+docker compose -f production.yml up --build -d
 ```
 
 Check running containers:
@@ -168,4 +165,3 @@ scp -i <your-key.pem> ubuntu@<SERVER_IP>:/path/to/dump.sql /local/path/
 cat dump.sql | docker exec -i <db-container> psql -U <db-user> -d <db-name>
 ```
 
-Do you want me to also **add firewall setup (UFW + SSH only, open HTTP/HTTPS)** and **NGINX reverse proxy setup** for production best practices? That’s usually the next step after this.
