@@ -32,6 +32,7 @@ sudo mkdir -p /etc/apt/keyrings
 Add Docker GPG key:
 
 ```bash
+sudo rm -f /etc/apt/keyrings/docker.gpg
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
   sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 ```
