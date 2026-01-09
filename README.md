@@ -29,11 +29,61 @@ sudo apt-get install -y ca-certificates curl gnupg lsb-release
 sudo mkdir -p /etc/apt/keyrings
 ```
 
+### DNS Troubleshooting (if needed)
+
+If you encounter DNS resolution errors (e.g., "Could not resolve host"), verify your DNS:
+
+```bash
+# Check DNS resolution
+nslookup download.docker.com
+```
+
+**If DNS resolution fails**, you have two options:
+
+**Option 1: Temporary DNS fix (may not work with systemd-resolved or NetworkManager)**
+
+```bash
+# Backup original resolv.conf
+sudo cp /etc/resolv.conf /etc/resolv.conf.backup
+
+# Temporarily use Google DNS
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
+echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf > /dev/null
+```
+
+**Option 2: Permanent DNS fix for systemd-based systems (recommended)**
+
+```bash
+# Configure systemd-resolved
+sudo nano /etc/systemd/resolved.conf
+# Add: DNS=8.8.8.8 8.8.4.4
+# Then restart the service:
+sudo systemctl restart systemd-resolved
+```
+
 Add Docker GPG key:
 
 ```bash
 sudo rm -f /etc/apt/keyrings/docker.gpg
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+```
+
+**Verify the key was downloaded successfully:**
+
+```bash
+ls -la /etc/apt/keyrings/docker.gpg
+```
+
+If the Docker GPG key download fails with DNS errors, try using retry mechanisms or an alternative download tool:
+
+```bash
+# Alternative: download with retry
+curl --retry 5 --retry-delay 3 -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+  sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Or use wget as an alternative
+wget -qO- https://download.docker.com/linux/ubuntu/gpg | \
   sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 ```
 
