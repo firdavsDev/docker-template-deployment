@@ -36,16 +36,29 @@ If you encounter DNS resolution errors (e.g., "Could not resolve host"), verify 
 ```bash
 # Check DNS resolution
 nslookup download.docker.com
+```
 
-# If it fails, backup and temporarily use Google DNS
+**If DNS resolution fails**, you have two options:
+
+**Option 1: Temporary DNS fix (may not work with systemd-resolved or NetworkManager)**
+
+```bash
+# Backup original resolv.conf
 sudo cp /etc/resolv.conf /etc/resolv.conf.backup
+
+# Temporarily use Google DNS
 echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
 echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf > /dev/null
+```
 
-# For permanent DNS fix on systemd-based systems:
-# sudo nano /etc/systemd/resolved.conf
+**Option 2: Permanent DNS fix for systemd-based systems (recommended)**
+
+```bash
+# Configure systemd-resolved
+sudo nano /etc/systemd/resolved.conf
 # Add: DNS=8.8.8.8 8.8.4.4
-# Then: sudo systemctl restart systemd-resolved
+# Then restart the service:
+sudo systemctl restart systemd-resolved
 ```
 
 Add Docker GPG key:
@@ -62,7 +75,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
 ls -la /etc/apt/keyrings/docker.gpg
 ```
 
-If the above command fails with DNS errors, try using retry mechanisms or an alternative download tool:
+If the Docker GPG key download fails with DNS errors, try using retry mechanisms or an alternative download tool:
 
 ```bash
 # Alternative: download with retry
