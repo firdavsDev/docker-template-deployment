@@ -37,7 +37,8 @@ If you encounter DNS resolution errors (e.g., "Could not resolve host"), verify 
 # Check DNS resolution
 nslookup download.docker.com
 
-# If it fails, temporarily use Google DNS
+# If it fails, backup and temporarily use Google DNS
+sudo cp /etc/resolv.conf /etc/resolv.conf.backup
 echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf > /dev/null
 echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf > /dev/null
 
@@ -61,7 +62,7 @@ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
 ls -la /etc/apt/keyrings/docker.gpg
 ```
 
-If the above command fails with DNS errors, try using an alternative mirror or wait a few moments:
+If the above command fails with DNS errors, try using retry mechanisms or an alternative download tool:
 
 ```bash
 # Alternative: download with retry
